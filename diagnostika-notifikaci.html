@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔬 Diagnostika Notifikačního Systému</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0b0f1a 0%, #1a1f2e 100%);
+            color: #00ff99;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #00d9ff;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(0, 217, 255, 0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #00d9ff;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+        }
+        
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #00ff99;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .section h2 {
+            color: #00d9ff;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #00d9ff;
+            padding-bottom: 10px;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+        }
+        
+        .status-label {
+            color: #00ff99;
+            font-weight: bold;
+        }
+        
+        .status-value {
+            color: #ffffff;
+        }
+        
+        .status-value.success {
+            color: #00ff00;
+        }
+        
+        .status-value.warning {
+            color: #ff9900;
+        }
+        
+        .status-value.error {
+            color: #ff0000;
+        }
+        
+        .btn {
+            background: #00d9ff;
+            color: #0b0f1a;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 217, 255, 0.4);
+        }
+        
+        .btn:hover {
+            background: #00ff99;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 255, 153, 0.5);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn.danger {
+            background: #ff5555;
+            color: white;
+        }
+        
+        .btn.danger:hover {
+            background: #ff0000;
+        }
+        
+        .console-output {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            border: 1px solid #00ff00;
+        }
+        
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        
+        .badge.active {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .badge.inactive {
+            background: #666;
+            color: #fff;
+        }
+        
+        .back-link {
+            display: inline-block;
+            color: #00d9ff;
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+        
+        .back-link:hover {
+            color: #00ff99;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">🖖 ← Zpět na Lékařský Protokol</a>
+        
+        <h1>🔬 Diagnostika Notifikačního Systému</h1>
+        
+        <!-- ZÁKLADNÍ INFORMACE -->
+        <div class="section">
+            <h2>📊 Základní Informace</h2>
+            <div class="status-item">
+                <span class="status-label">Prohlížeč:</span>
+                <span class="status-value" id="browser-info">Načítám...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">PWA Instalace:</span>
+                <span class="status-value" id="pwa-status">Načítám...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Notifikace povoleny:</span>
+                <span class="status-value" id="notification-permission">Načítám...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Service Worker:</span>
+                <span class="status-value" id="sw-status">Načítám...</span>
+            </div>
+        </div>
+        
+        <!-- PERIODIC SYNC STATUS -->
+        <div class="section">
+            <h2>🔄 Periodic Background Sync</h2>
+            <div class="status-item">
+                <span class="status-label">Podpora:</span>
+                <span class="status-value" id="periodic-sync-support">Načítám...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Registrace:</span>
+                <span class="status-value" id="periodic-sync-registered">Načítám...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Aktivní syncs:</span>
+                <span class="status-value" id="active-syncs">Načítám...</span>
+            </div>
+        </div>
+        
+        <!-- FIREBASE STATUS -->
+        <div class="section">
+            <h2>🔥 Firebase Cloud Messaging</h2>
+            <div class="status-item">
+                <span class="status-label">Firebase SDK:</span>
+                <span class="status-value" id="firebase-status">Načítám...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">FCM Token:</span>
+                <span class="status-value" id="fcm-token">Načítám...</span>
+            </div>
+        </div>
+        
+        <!-- OVLÁDÁNÍ -->
+        <div class="section">
+            <h2>🎮 Ovládání</h2>
+            <div class="button-grid">
+                <button class="btn" onclick="runFullDiagnostics()">🔍 Plná Diagnostika</button>
+                <button class="btn" onclick="testNotification()">📤 Test Notifikace</button>
+                <button class="btn" onclick="registerSync()">✅ Aktivovat Periodic Sync</button>
+                <button class="btn danger" onclick="unregisterSync()">❌ Deaktivovat Sync</button>
+                <button class="btn" onclick="syncMedicines()">🔄 Sync Data Léků</button>
+                <button class="btn" onclick="clearConsole()">🧹 Vyčistit Konzoli</button>
+            </div>
+        </div>
+        
+        <!-- KONZOLE OUTPUT -->
+        <div class="section">
+            <h2>📝 Výstup Diagnostiky</h2>
+            <div class="console-output" id="console-output">
+═══════════════════════════════════════════════════════════
+🚀 DIAGNOSTICKÝ PANEL PŘIPRAVEN
+═══════════════════════════════════════════════════════════
+Klikni na "Plná Diagnostika" pro kompletní kontrolu systému.
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Helper pro výpis do konzole
+        function log(message, type = 'info') {
+            const output = document.getElementById('console-output');
+            const timestamp = new Date().toLocaleTimeString('cs-CZ');
+            const prefix = {
+                'info': 'ℹ️',
+                'success': '✅',
+                'warning': '⚠️',
+                'error': '❌'
+            }[type] || 'ℹ️';
+            
+            output.textContent += `\n[${timestamp}] ${prefix} ${message}`;
+            output.scrollTop = output.scrollHeight;
+            console.log(`[Diagnostika] ${message}`);
+        }
+        
+        function clearConsole() {
+            document.getElementById('console-output').textContent = '';
+            log('Konzole vyčištěna', 'info');
+        }
+        
+        // Načtení základních informací při startu
+        window.addEventListener('DOMContentLoaded', async () => {
+            log('Diagnostický panel načten', 'success');
+            
+            // Browser info
+            const browserInfo = navigator.userAgent.includes('Chrome') ? 'Chrome/Edge' : 
+                               navigator.userAgent.includes('Firefox') ? 'Firefox' : 
+                               navigator.userAgent.includes('Safari') ? 'Safari' : 'Neznámý';
+            document.getElementById('browser-info').textContent = browserInfo;
+            
+            // PWA status
+            const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+            const pwaStatus = document.getElementById('pwa-status');
+            pwaStatus.textContent = isPWA ? 'Nainstalováno ✅' : 'Nenainstalováno ⚠️';
+            pwaStatus.className = `status-value ${isPWA ? 'success' : 'warning'}`;
+            
+            // Notification permission
+            const notifPerm = document.getElementById('notification-permission');
+            const permission = Notification.permission;
+            notifPerm.textContent = permission === 'granted' ? 'Povoleno ✅' : 
+                                   permission === 'denied' ? 'Zamítnuto ❌' : 'Nenastaveno ⚠️';
+            notifPerm.className = `status-value ${permission === 'granted' ? 'success' : 'warning'}`;
+            
+            // Service Worker
+            if ('serviceWorker' in navigator) {
+                const registration = await navigator.serviceWorker.getRegistration();
+                const swStatus = document.getElementById('sw-status');
+                if (registration && registration.active) {
+                    swStatus.textContent = 'Aktivní ✅';
+                    swStatus.className = 'status-value success';
+                } else {
+                    swStatus.textContent = 'Neaktivní ❌';
+                    swStatus.className = 'status-value error';
+                }
+            }
+            
+            // Periodic Sync
+            const periodicSupport = 'periodicSync' in ServiceWorkerRegistration.prototype;
+            const syncSupport = document.getElementById('periodic-sync-support');
+            syncSupport.textContent = periodicSupport ? 'Podporováno ✅' : 'Nepodporováno ❌';
+            syncSupport.className = `status-value ${periodicSupport ? 'success' : 'error'}`;
+            
+            if (periodicSupport) {
+                try {
+                    const registration = await navigator.serviceWorker.ready;
+                    const tags = await registration.periodicSync.getTags();
+                    const isRegistered = tags.includes('medicine-check-sync');
+                    
+                    const syncReg = document.getElementById('periodic-sync-registered');
+                    syncReg.textContent = isRegistered ? 'Aktivní ✅' : 'Neaktivní ⚠️';
+                    syncReg.className = `status-value ${isRegistered ? 'success' : 'warning'}`;
+                    
+                    document.getElementById('active-syncs').textContent = tags.length > 0 ? tags.join(', ') : 'Žádné';
+                } catch (error) {
+                    log(`Chyba při kontrole Periodic Sync: ${error.message}`, 'error');
+                }
+            }
+            
+            // Firebase
+            const firebaseStatus = document.getElementById('firebase-status');
+            if (typeof firebase !== 'undefined') {
+                firebaseStatus.textContent = 'Načten ✅';
+                firebaseStatus.className = 'status-value success';
+            } else {
+                firebaseStatus.textContent = 'Nenačten ❌';
+                firebaseStatus.className = 'status-value error';
+            }
+        });
+        
+        // Plná diagnostika
+        async function runFullDiagnostics() {
+            clearConsole();
+            log('═══════════════════════════════════════', 'info');
+            log('SPOUŠTÍM PLNOU DIAGNOSTIKU', 'info');
+            log('═══════════════════════════════════════', 'info');
+            
+            // 1. Browser
+            log('1. Kontrola prohlížeče...', 'info');
+            const isChrome = navigator.userAgent.includes('Chrome');
+            const isEdge = navigator.userAgent.includes('Edg');
+            if (isChrome || isEdge) {
+                log('  ✅ Používáš Chrome/Edge - perfektní pro Periodic Sync!', 'success');
+            } else {
+                log('  ⚠️ Nedoporučený prohlížeč! Použij Chrome nebo Edge.', 'warning');
+            }
+            
+            // 2. PWA
+            log('2. Kontrola PWA instalace...', 'info');
+            const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+            if (isPWA) {
+                log('  ✅ PWA je nainstalována!', 'success');
+            } else {
+                log('  ⚠️ PWA není nainstalována! Klikni na ikonu ⊕ v adresním řádku.', 'warning');
+            }
+            
+            // 3. Notifikace
+            log('3. Kontrola notifikací...', 'info');
+            if (Notification.permission === 'granted') {
+                log('  ✅ Notifikace povoleny!', 'success');
+            } else {
+                log('  ❌ Notifikace nejsou povoleny! Povol je nejdřív.', 'error');
+            }
+            
+            // 4. Service Worker
+            log('4. Kontrola Service Workeru...', 'info');
+            if ('serviceWorker' in navigator) {
+                const registration = await navigator.serviceWorker.getRegistration();
+                if (registration && registration.active) {
+                    log(`  ✅ Service Worker aktivní: ${registration.active.scriptURL}`, 'success');
+                } else {
+                    log('  ❌ Service Worker není aktivní!', 'error');
+                }
+            } else {
+                log('  ❌ Service Worker nepodporován!', 'error');
+            }
+            
+            // 5. Periodic Sync
+            log('5. Kontrola Periodic Background Sync...', 'info');
+            const periodicSupport = 'periodicSync' in ServiceWorkerRegistration.prototype;
+            if (periodicSupport) {
+                log('  ✅ Periodic Sync je podporován!', 'success');
+                
+                try {
+                    const registration = await navigator.serviceWorker.ready;
+                    const tags = await registration.periodicSync.getTags();
+                    
+                    if (tags.includes('medicine-check-sync')) {
+                        log('  ✅ Periodic Sync je AKTIVNÍ!', 'success');
+                        log(`  📋 Aktivní syncs: ${tags.join(', ')}`, 'info');
+                    } else {
+                        log('  ⚠️ Periodic Sync NENÍ zaregistrován!', 'warning');
+                        log('  💡 Klikni na "Aktivovat Periodic Sync"', 'info');
+                    }
+                } catch (error) {
+                    log(`  ❌ Chyba při kontrole: ${error.message}`, 'error');
+                }
+            } else {
+                log('  ❌ Periodic Sync NENÍ podporován!', 'error');
+                log('  💡 Přepni na Chrome nebo Edge', 'warning');
+            }
+            
+            // 6. Firebase
+            log('6. Kontrola Firebase...', 'info');
+            if (typeof firebase !== 'undefined') {
+                log('  ✅ Firebase SDK načten!', 'success');
+            } else {
+                log('  ❌ Firebase SDK nenačten!', 'error');
+            }
+            
+            log('═══════════════════════════════════════', 'info');
+            log('DIAGNOSTIKA DOKONČENA', 'success');
+            log('═══════════════════════════════════════', 'info');
+            
+            // Celkové doporučení
+            if (isPWA && periodicSupport && Notification.permission === 'granted') {
+                log('🎉 VÝSLEDEK: Systém je připraven! Aktivuj Periodic Sync.', 'success');
+            } else {
+                log('⚠️ VÝSLEDEK: Některé požadavky nejsou splněny.', 'warning');
+            }
+        }
+        
+        // Test notifikace
+        async function testNotification() {
+            log('Posílám testovací notifikaci...', 'info');
+            
+            if (Notification.permission !== 'granted') {
+                log('❌ Notifikace nejsou povoleny!', 'error');
+                return;
+            }
+            
+            try {
+                const registration = await navigator.serviceWorker.ready;
+                await registration.showNotification('🧪 Test Notifikace', {
+                    body: 'Pokud vidíš tuto notifikaci, systém funguje!',
+                    icon: 'https://raw.githubusercontent.com/jirka22med/Lekarsky-Protokol-Jirika-2.cz/11b61ddd0c3cf63536e88c9ffdc2acb93321f095/image_192x192.png',
+                    tag: 'test-notification'
+                });
+                log('✅ Testovací notifikace odeslána!', 'success');
+            } catch (error) {
+                log(`❌ Chyba: ${error.message}`, 'error');
+            }
+        }
+        
+        // Registrace Periodic Sync
+        async function registerSync() {
+            log('Registruji Periodic Sync...', 'info');
+            
+            if (!('periodicSync' in ServiceWorkerRegistration.prototype)) {
+                log('❌ Periodic Sync není podporován!', 'error');
+                return;
+            }
+            
+            const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+            if (!isPWA) {
+                log('❌ PWA není nainstalována! Nejdřív nainstaluj aplikaci.', 'error');
+                return;
+            }
+            
+            try {
+                const registration = await navigator.serviceWorker.ready;
+                await registration.periodicSync.register('medicine-check-sync', {
+                    minInterval: 12 * 60 * 60 * 1000 // 12 hodin
+                });
+                log('✅ Periodic Sync zaregistrován!', 'success');
+                log('⏰ Interval: 12 hodin', 'info');
+                
+                // Aktualizuj status
+                setTimeout(() => window.location.reload(), 1000);
+            } catch (error) {
+                log(`❌ Chyba: ${error.message}`, 'error');
+            }
+        }
+        
+        // Odregistrace Periodic Sync
+        async function unregisterSync() {
+            log('Odregistrovávám Periodic Sync...', 'info');
+            
+            try {
+                const registration = await navigator.serviceWorker.ready;
+                await registration.periodicSync.unregister('medicine-check-sync');
+                log('✅ Periodic Sync odregistrován!', 'success');
+                
+                // Aktualizuj status
+                setTimeout(() => window.location.reload(), 1000);
+            } catch (error) {
+                log(`❌ Chyba: ${error.message}`, 'error');
+            }
+        }
+        
+        // Sync léků
+        async function syncMedicines() {
+            log('Synchronizuji data léků do Service Workeru...', 'info');
+            log('⚠️ Tato funkce vyžaduje běžící hlavní aplikaci!', 'warning');
+            log('💡 Otevři index.html a data se synchronizují automaticky.', 'info');
+        }
+    </script>
+</body>
+</html>
