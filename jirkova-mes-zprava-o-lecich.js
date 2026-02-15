@@ -132,7 +132,28 @@ async function detectAndSetupNotificationStrategy() {
             await window.syncMedicinesToServiceWorker(window.currentMedicines);
         }
         
-        window.showUserMessage('💡 Tip: Aktivuj "Běh na pozadí" pro automatické notifikace!');
+        // NOVÉ: Zkontrolujeme zda už není Periodic Sync aktivní
+        try {
+            const registration = await navigator.serviceWorker.ready;
+            const tags = await registration.periodicSync.getTags();
+            
+            if (tags.includes('medicine-check-sync')) {
+                console.log('✅ Periodic Sync již byl aktivován dříve - obnovuji stav UI');
+                window.showUserMessage('✅ Běh na pozadí je aktivní');
+                
+                // Aktualizujeme UI tlačítko
+                if (typeof window.updateSyncButtonState === 'function') {
+                    setTimeout(() => {
+                        window.updateSyncButtonState();
+                    }, 2000);
+                }
+            } else {
+                console.log('💡 Periodic Sync zatím není aktivní');
+                window.showUserMessage('💡 Tip: Aktivuj "Běh na pozadí" pro automatické notifikace!');
+            }
+        } catch (error) {
+            console.error('❌ Chyba při kontrole Periodic Sync stavu:', error);
+        }
         
     } else if (periodicSyncSupported && !isPWAInstalled) {
         // Periodic Sync je podporován, ale PWA není nainstalovaná
