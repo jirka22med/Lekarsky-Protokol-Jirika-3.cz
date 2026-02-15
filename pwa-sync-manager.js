@@ -341,13 +341,63 @@ window.updateSyncButtonState = async function() {
     
     const status = await getPeriodicSyncStatus();
     
+    console.log('🔄 Aktualizuji stav tlačítka:', status);
+    
     if (status.registered) {
         syncButton.innerHTML = '✅ Běh na pozadí AKTIVNÍ';
         syncButton.style.backgroundColor = '#00ff00';
+        console.log('✅ Tlačítko nastaveno na AKTIVNÍ');
     } else {
         syncButton.innerHTML = '🔄 Aktivovat běh na pozadí';
         syncButton.style.backgroundColor = '#00aaff';
+        console.log('⚠️ Tlačítko nastaveno na NEAKTIVNÍ');
     }
+};
+
+/**
+ * @function autoCheckAndRestoreSync
+ * @description Automaticky zkontroluje a obnoví Periodic Sync při načtení stránky
+ * DŮLEŽITÉ: Volá se automaticky při DOMContentLoaded
+ */
+window.autoCheckAndRestoreSync = async function() {
+    console.log('🔍 Auto-check: Kontroluji stav Periodic Sync při načtení stránky...');
+    
+    // Počkáme na Service Worker
+    await navigator.serviceWorker.ready;
+    
+    const status = await getPeriodicSyncStatus();
+    
+    if (status.supported && status.installed) {
+        if (status.registered) {
+            console.log('✅ Periodic Sync je aktivní po refreshi!');
+            window.showUserMessage('✅ Běh na pozadí je aktivní');
+        } else {
+            console.log('⚠️ Periodic Sync není aktivní po refreshi!');
+            console.log('💡 Auto-restoring Periodic Sync...');
+            
+            // AUTOMATICKÁ OBNOVA - důležité!
+            try {
+                const registration = await navigator.serviceWorker.ready;
+                await registration.periodicSync.register('medicine-check-sync', {
+                    minInterval: 12 * 60 * 60 * 1000 // 12 hodin
+                });
+                console.log('✅ Periodic Sync automaticky obnoven!');
+                window.showUserMessage('🔄 Běh na pozadí automaticky obnoven');
+                
+                // Aktualizuj tlačítko
+                setTimeout(() => {
+                    window.updateSyncButtonState();
+                }, 500);
+            } catch (error) {
+                console.error('❌ Chyba při auto-obnově Periodic Sync:', error);
+            }
+        }
+    }
+    
+    // Vždy aktualizuj tlačítko podle reálného stavu
+    setTimeout(() => {
+        window.updateSyncButtonState();
+    }, 1000);
 };
 
 /**
@@ -383,5 +433,18 @@ ${!status.registered ? '⚠️ Aktivuj běh na pozadí!' : ''}
     console.log(message);
     alert(message);
 };
+
+// ═══════════════════════════════════════════════════════════════
+// 🔄 AUTOMATICKÁ KONTROLA PŘI NAČTENÍ STRÁNKY
+// ═══════════════════════════════════════════════════════════════
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Počkáme až se všechno načte
+    setTimeout(() => {
+        if (typeof window.autoCheckAndRestoreSync === 'function') {
+            window.autoCheckAndRestoreSync();
+        }
+    }, 3000); // 3 sekundy po načtení
+});
 
 console.log("✅ PWA Sync Manager načten a připraven! 🚀");
