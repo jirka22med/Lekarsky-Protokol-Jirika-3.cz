@@ -277,6 +277,13 @@ async function getFCMToken() {
 
         if (fcmToken) {
             console.log("✅ FCM Token získán:", fcmToken);
+            console.log("🔥 ZKOPÍRUJ TENTO TOKEN DO FIREBASE CAMPAIGNS:");
+            console.log(fcmToken);
+            console.log("📋 Vlož ho do: Firebase Console → Messaging → Edit Campaign → Target → FCM Token");
+            
+            // Uložíme do global variable pro snadný přístup
+            window.fcmToken = fcmToken;
+            
             await saveFCMTokenToFirestore(fcmToken);
             return fcmToken;
         } else {
@@ -555,6 +562,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 2000);
 });
+
+// ═══════════════════════════════════════════════════════════════
+// 🔥 HELPER FUNKCE PRO ZÍSKÁNÍ FCM TOKENU (pro Firebase Campaigns)
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Získej FCM token pro Firebase Campaigns
+ * Spusť v konzoli: getMyFCMToken()
+ */
+window.getMyFCMToken = async function() {
+    if (window.fcmToken) {
+        console.log("🔥 TVŮJ FCM TOKEN:");
+        console.log(window.fcmToken);
+        console.log("\n📋 JAK POUŽÍT:");
+        console.log("1. Zkopíruj token výše (celý text)");
+        console.log("2. Otevři Firebase Console → Messaging → Campaigns");
+        console.log("3. Edit tvoji kampaň");
+        console.log("4. Target → změň na 'FCM registration token'");
+        console.log("5. Vlož token");
+        console.log("6. Save → Hotovo! ✅");
+        return window.fcmToken;
+    } else {
+        console.log("⚠️ Token ještě není k dispozici!");
+        console.log("💡 Nejdřív klikni na tlačítko '🔔 Povolit notifikace'");
+        console.log("💡 Pak znovu spusť: getMyFCMToken()");
+        return null;
+    }
+};
+
+console.log("💡 Pro získání FCM tokenu spusť v konzoli: getMyFCMToken()");
 
 // Observer pro synchronizaci dat léků do SW při každé změně
 if (typeof window.currentMedicines !== 'undefined') {
